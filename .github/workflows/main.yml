@@ -14,5 +14,6 @@ jobs:
         with:
           python-version: '3.14'
           cache: 'pip'
+      - run: pip install ruff pytest
       - run: make lint
       - run: make test
