@@ -1,8 +1,11 @@
 start:
 	uv run flask --app src/app --debug run --port 8080
 
+install:
+	pip install -e .
+
 lint:
-	ruff check
+	python3 -m ruff check .
 
 test:
-	pytest -v
+	python3 -m pytest
