@@ -8,6 +8,10 @@
 Учебный DevOps-проект на Python: минимальный Flask-сервис с endpoint `/ping` (ответ `pong`) для практики CI/CD,
 контейнеризации и локального запуска через `make`.
 
+#### Проект доступен по ссылке:
+
+https://devops-engineer-from-scratch-project-313-1rpc.onrender.com/ping
+
 #### Доступные команды:
 
 ```bash

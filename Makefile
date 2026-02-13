@@ -1,5 +1,5 @@
 start:
-	uv run flask --app src/app --debug run --port 8080
+	uv run flask --app src/main --debug run --port 8080
 
 install:
 	python3 -m pip install -e ".[dev]"
