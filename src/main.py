@@ -1,15 +1,19 @@
 import os
 
 import sentry_sdk
+from dotenv import load_dotenv
 
-from src.app import app
+from .app import create_app
 
-sentry_dns = os.environ.get("SENTRY_DNS", None)
 
-if sentry_dns:
-    sentry_sdk.init(
-        dsn=sentry_dns,
-    )
+def init_sentry():
+    sentry_dsn = os.environ.get("SENTRY_DSN", None)
+    if sentry_dsn:
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+        )
 
-if __name__ == "__main__":
-    app.run()
+
+load_dotenv()
+init_sentry()
+app = create_app()

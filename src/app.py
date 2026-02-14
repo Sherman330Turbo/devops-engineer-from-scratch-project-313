@@ -1,14 +1,17 @@
 from flask import Flask
+from sqlmodel import SQLModel
 
-app = Flask(__name__)
-
-
-@app.route("/ping")
-def get_ping():
-    return "pong"
+from .db import engine
+from .errors import register_error_handlers
+from .routes import register_routes
 
 
-@app.route("/err")
-def get_err():
-    1 / 0
-    return "pong"
+def create_app() -> Flask:
+    app = Flask(__name__)
+
+    SQLModel.metadata.create_all(engine)
+
+    register_routes(app)
+    register_error_handlers(app)
+
+    return app
