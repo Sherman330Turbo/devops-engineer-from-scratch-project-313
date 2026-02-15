@@ -18,3 +18,5 @@ dist/
 
 .ipynb_checkpoints/
 *.log
+
+node_modules/
