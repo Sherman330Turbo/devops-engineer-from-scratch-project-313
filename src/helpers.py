@@ -29,7 +29,7 @@ def get_valid_new_link_or_400(request):
     original_url = payload.get("original_url", "")
     short_name = payload.get("short_name", "")
 
-    if original_url == "" and short_name == "":
+    if original_url == "" or short_name == "":
         abort(400)
 
     return original_url, short_name
@@ -56,10 +56,12 @@ def get_updated_link_or_422(request):
     return updated_link
 
 
-def uniq_short_name_link_or_409(session, short_name: str):
+def uniq_short_name_link_or_409(
+    session, short_name: str, exclude_link_id: int | None = None
+):
     link = session.exec(
         select(Link).where(Link.short_name == short_name)
     ).one_or_none()
 
-    if link is not None:
+    if link is not None and link.id != exclude_link_id:
         abort(409)

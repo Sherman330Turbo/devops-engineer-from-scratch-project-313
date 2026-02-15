@@ -1,15 +1,15 @@
 from flask import jsonify, request
-from pydantic import ValidationError
 from sqlmodel import Session, select
 
 from .db import engine
 from .helpers import (
     generate_short_link,
     get_link_or_404,
+    get_updated_link_or_422,
     get_valid_new_link_or_400,
     uniq_short_name_link_or_409,
 )
-from .models import Link, LinkUpdate
+from .models import Link
 
 
 def register_routes(app):
@@ -42,23 +42,19 @@ def register_routes(app):
 
     @app.put("/api/links/<int:link_id>")
     def update_link_by_id(link_id: int):
-        payload = request.get_json(silent=True)
-        if payload is None:
-            return "Invalid payload", 422
+        updated_link = get_updated_link_or_422(request)
 
         with Session(engine) as session:
             link = get_link_or_404(session, link_id)
-
-            try:
-                updated_link = LinkUpdate.model_validate(payload)
-            except ValidationError:
-                return "Invalid payload", 422
+            if updated_link.short_name:
+                uniq_short_name_link_or_409(
+                    session, updated_link.short_name, exclude_link_id=link.id
+                )
 
             data = updated_link.model_dump(exclude_unset=True)
             for key, value in data.items():
                 setattr(link, key, value)
 
-            uniq_short_name_link_or_409(session, link.short_name)
             link.short_url = generate_short_link(
                 link.original_url, link.short_name
             )
