@@ -1,5 +1,7 @@
-from flask import jsonify, request
-from sqlmodel import Session, select
+import json
+
+from flask import abort, jsonify, make_response, request
+from sqlmodel import Session, func, select
 
 from .db import engine
 from .helpers import (
@@ -15,9 +17,33 @@ from .models import Link
 def register_routes(app):
     @app.get("/api/links")
     def read_links():
+        raw_range = request.args.get("range", "[0, 9]")
+        try:
+            range_list = json.loads(raw_range)
+            if (
+                not len(range_list) == 2
+                or not all(isinstance(value, int) for value in range_list)
+                or range_list[0] > range_list[1]
+                or range_list[0] < 0
+            ):
+                raise ValueError
+        except json.JSONDecodeError, TypeError, ValueError:
+            abort(400)
+
+        min = int(range_list[0])
+        max = int(range_list[1])
+
         with Session(engine) as session:
-            results = session.exec(select(Link)).all()
-        return jsonify([link.model_dump() for link in results])
+            results = session.exec(
+                select(Link).order_by(Link.id).offset(min).limit(max + 1 - min)
+            ).all()
+            total = session.exec(select(func.count()).select_from(Link)).one()
+
+        response = make_response(
+            jsonify([link.model_dump() for link in results]), 200
+        )
+        response.headers["Content-Range"] = f"links {min}-{max}/{total}"
+        return response
 
     @app.post("/api/links")
     def create_link():

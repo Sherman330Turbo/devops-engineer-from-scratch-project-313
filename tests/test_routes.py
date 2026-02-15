@@ -62,16 +62,44 @@ def _seed_link(engine, suffix: str):
 
 
 def test_read_links(client, test_engine):
-    # Happy path - 200
+
     _seed_link(test_engine, "one")
     _seed_link(test_engine, "two")
+    _seed_link(test_engine, "three")
+    _seed_link(test_engine, "four")
 
+    # Happy path - 200
     response = client.get("/api/links")
     assert response.status_code == 200
 
     data = response.get_json()
     assert isinstance(data, list)
-    assert len(data) == 2
+    assert len(data) == 4
+
+    # Happy path with range - 200
+    response = client.get("/api/links?range=[1,5]")
+    assert response.status_code == 200
+    assert response.headers["Content-Range"] == "links 1-5/4"
+
+    data = response.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 3
+
+    # Range validation errors - 400
+    response = client.get("/api/links?range=[5]")
+    assert response.status_code == 400
+
+    response = client.get("/api/links?range=[5, 1]")
+    assert response.status_code == 400
+
+    response = client.get("/api/links?range=['a' 1]")
+    assert response.status_code == 400
+
+    response = client.get("/api/links?range=[]")
+    assert response.status_code == 400
+
+    response = client.get("/api/links?range=[-1, 1]")
+    assert response.status_code == 400
 
 
 def test_create_link(client):

@@ -1,4 +1,8 @@
 def register_error_handlers(app):
+    @app.errorhandler(400)
+    def bad_request(err):
+        return "Bad request", 400
+
     @app.errorhandler(404)
     def page_not_found(err):
         return "Not Found", 404
