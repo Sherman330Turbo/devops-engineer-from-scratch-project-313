@@ -1,9 +1,9 @@
 # Собираем фронтовый образ
 FROM node:20-alpine AS front-build
 
-WORKDIR /
+WORKDIR /front
 
-COPY package.json package-lock.json /
+COPY package.json package-lock.json ./
 
 RUN npm ci
 
@@ -29,7 +29,7 @@ RUN python3 -m pip install -e ".[dev]"
 COPY /src ./src
 
 #Копируем из фронтового образа скаченынй пакет с фронтовым приложением
-COPY --from=front-build /node_modules/@hexlet/project-devops-deploy-crud-frontend/dist/. ./public/
+COPY --from=front-build /front/node_modules/@hexlet/project-devops-deploy-crud-frontend/dist/. ./public/
 
 EXPOSE 80
 
