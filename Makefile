@@ -2,9 +2,9 @@ FRAMEWORK ?= react
 API_URL ?= http://127.0.0.1:8080
 DOCKER_TAG ?= sherman330turbo/pyp-example
 
-.PHONY: start start-backend start-frontend build-docker install lint test
+.PHONY: start start-backend start-frontend build-docker install install-back install-front lint test
 
-start:
+start: install
 	npx concurrently \
 		--kill-others-on-fail \
 		--names "back,front" \
@@ -23,11 +23,13 @@ start-frontend:
 		exit 0; \
 	fi
 
-build-docker:
-	docker build --no-cache -t "$(DOCKER_TAG)" .
+install: install-back install-front
 
-install:
+install-back:
 	python3 -m pip install -e ".[dev]"
+
+install-front:
+	npm ci
 
 lint:
 	python3 -m ruff check .

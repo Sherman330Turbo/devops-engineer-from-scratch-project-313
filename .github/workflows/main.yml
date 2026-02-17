@@ -16,7 +16,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - run: make install
+      - run: make install-back
       - run: make lint
       - run: make test
 

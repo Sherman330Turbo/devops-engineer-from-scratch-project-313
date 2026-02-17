@@ -18,7 +18,9 @@ def get_short_hash(input_string, length=6):
 def generate_short_link(
     original_url: str = None, short_name: str = None
 ) -> str:
-    return f"https://{os.environ['BASE_URL']}/{short_name}/{get_short_hash(original_url)}"
+    return (
+        f"{os.environ['BASE_URL']}/{short_name}/{get_short_hash(original_url)}"
+    )
 
 
 def get_valid_new_link_or_400(request):
