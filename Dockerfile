@@ -2,12 +2,30 @@ FROM python:3.14.3-slim-bookworm
 
 WORKDIR /app
 
+# Установка nginx
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nginx && \
+    rm -rf /var/lib/apt/lists/*
+
+# Отключаем дефолтный сайт nginx, чтобы он не перехватывал localhost
+RUN rm -f /etc/nginx/sites-enabled/default
+
+#Копируем nginx конфиг
+COPY deploy/devops-project-313.conf /etc/nginx/conf.d/default.conf
+
 COPY pyproject.toml /app/
 
 RUN python3 -m pip install -e ".[dev]"
 
 COPY /src ./src
 
-EXPOSE 8080
+# Копирование статической сборки фронта
+COPY /node_modules/@hexlet/project-devops-deploy-crud-frontend/dist/. ./public/
 
-CMD ["python3", "-m", "flask", "--app", "src/main.py", "run", "--host=0.0.0.0", "--port=8080"]
+EXPOSE 80
+
+# инициализируем entrypoint.sh
+COPY /deploy/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
