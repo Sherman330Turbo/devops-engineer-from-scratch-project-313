@@ -1,10 +1,10 @@
 FRAMEWORK ?= react
 API_URL ?= http://127.0.0.1:8080
-DOCKER_TAG ?= sherman330turbo/pyp-example
+DOCKER_TAG ?= sherman330turbo/link-shortener
 
-.PHONY: start start-backend start-frontend build-docker install install-back install-front lint test
+.PHONY: start start-backend start-frontend build-docker install install-local install-back install-back-local install-front lint test
 
-start: install
+start: install-local
 	npx concurrently \
 		--kill-others-on-fail \
 		--names "back,front" \
@@ -25,8 +25,13 @@ start-frontend:
 
 install: install-back install-front
 
+install-local: install-back-local install-front
+
 install-back:
 	python3 -m pip install -e ".[dev]"
+
+install-back-local:
+	uv sync --extra dev;
 
 install-front:
 	npm ci
