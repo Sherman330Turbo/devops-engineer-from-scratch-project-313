@@ -1,4 +1,13 @@
-FROM python:3.14.3-slim-bookworm
+# Собираем фронтовый образ
+FROM node:20-alpine AS front-build
+
+WORKDIR /
+
+COPY package.json package-lock.json /
+
+RUN npm ci
+
+FROM python:3.14.3-slim-bookworm AS runtime-build
 
 WORKDIR /app
 
@@ -19,8 +28,8 @@ RUN python3 -m pip install -e ".[dev]"
 
 COPY /src ./src
 
-# Копирование статической сборки фронта
-COPY /node_modules/@hexlet/project-devops-deploy-crud-frontend/dist/. ./public/
+#Копируем из фронтового образа скаченынй пакет с фронтовым приложением
+COPY --from=front-build /node_modules/@hexlet/project-devops-deploy-crud-frontend/dist/. ./public/
 
 EXPOSE 80
 
