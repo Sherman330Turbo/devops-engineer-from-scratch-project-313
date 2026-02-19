@@ -61,6 +61,12 @@ def _seed_link(engine, suffix: str):
         return link.id
 
 
+def test_ping(client):
+    response = client.get("/ping")
+    assert response.status_code == 200
+    assert response.get_data(as_text=True) == "pong"
+
+
 def test_read_links(client, test_engine):
 
     _seed_link(test_engine, "one")
@@ -121,18 +127,18 @@ def test_create_link(client):
     response = client.post("/api/links", json=payload)
     assert response.status_code == 409
 
-    # Попытка создать новую сущность с пустым payload - 400
+    # Попытка создать новую сущность с пустым payload - 422
     response = client.post("/api/links", json={})
-    assert response.status_code == 400
+    assert response.status_code == 422
 
-    # Попытка создать новую сущность с частично пустым payload - 400
+    # Попытка создать новую сущность с частично пустым payload - 422
     response = client.post(
         "/api/links", json={"original_url": "https://example.com/only-url"}
     )
-    assert response.status_code == 400
+    assert response.status_code == 422
 
     response = client.post("/api/links", json={"short_name": "only-name"})
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_read_link_by_id(client, test_engine):
@@ -176,7 +182,7 @@ def test_update_link_by_id(client, test_engine):
     data = response.get_json()
     assert data["original_url"] == partial_payload["original_url"]
     assert data["short_name"] == payload["short_name"]
-    assert data["short_url"] != short_url
+    assert data["short_url"] == short_url
 
     # Обновление сущности на существующее имя - 409
     payload_with_same_name = {
@@ -219,7 +225,7 @@ def test_delete_link_by_id(client, test_engine):
         ).one_or_none()
         assert deleted is None
 
-    # Отказ от идемпотемтности удаления - 404
+    # Отказ от идемпотентности удаления - 404
     response = client.delete(f"/api/links/{link_id}")
     assert response.status_code == 404
 

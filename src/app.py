@@ -5,7 +5,6 @@ from flask_cors import CORS
 from sqlmodel import SQLModel
 
 from .db import engine
-from .errors import register_error_handlers
 from .routes import register_routes
 
 
@@ -29,7 +28,10 @@ def create_app() -> Flask:
 
     SQLModel.metadata.create_all(engine)
 
+    @app.get("/ping")
+    def get_ping():
+        return "pong", 200
+
     register_routes(app)
-    register_error_handlers(app)
 
     return app

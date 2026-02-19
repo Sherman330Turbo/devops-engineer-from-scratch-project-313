@@ -1,10 +1,10 @@
 FRAMEWORK ?= react
 API_URL ?= http://127.0.0.1:8080
-DOCKER_TAG ?= sherman330turbo/link-shortener
+DOCKER_TAG ?= sherman330turbo/pyp-example
 
-.PHONY: start start-backend start-frontend build-docker install install-local install-back install-back-local install-front lint test
+.PHONY: start start-backend start-frontend build-docker install install-back install-front lint test
 
-start: install-local
+run: install
 	npx concurrently \
 		--kill-others-on-fail \
 		--names "back,front" \
@@ -13,7 +13,7 @@ start: install-local
 		"$(MAKE) start-frontend FRAMEWORK=$(FRAMEWORK)"
 
 start-backend:
-	uv run flask --app src/main --debug run --port 8080
+	uv run flask --app src/main --debug run --host 0.0.0.0 --port 8080
 
 start-frontend:
 	@if [ "$(FRAMEWORK)" = "react" ]; then \
@@ -25,13 +25,15 @@ start-frontend:
 
 install: install-back install-front
 
-install-local: install-back-local install-front
-
 install-back:
-	python3 -m pip install -e ".[dev]"
-
-install-back-local:
-	uv sync --extra dev;
+	@if python3 -m pip --version >/dev/null 2>&1; then \
+		python3 -m pip install -e ".[dev]"; \
+	elif command -v uv >/dev/null 2>&1; then \
+		uv sync --extra dev; \
+	else \
+		echo "Neither pip nor uv is available"; \
+		exit 1; \
+	fi
 
 install-front:
 	npm ci
