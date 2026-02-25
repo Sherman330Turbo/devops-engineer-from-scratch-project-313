@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# Validate nginx config early so container fails fast on bad includes/syntax.
-nginx -t
-
-python3 -m flask --app src/main.py run --host=127.0.0.1 --port=8080 &
+uv run flask --app src/main --debug run --host 0.0.0.0 --port 8080 &
 BACK_PID=$!
 
 term() { kill -TERM "$BACK_PID" 2>/dev/null || true; }

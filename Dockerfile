@@ -11,15 +11,18 @@ FROM python:3.14.3-alpine3.23 AS runtime-build
 
 WORKDIR /app
 
-RUN apk add bash
-RUN apk add --no-cache nginx
+RUN apk add --no-cache bash
 
-#Копируем nginx конфиг
+# Инициализируем nginx
+RUN apk add --no-cache nginx
 COPY deploy/default.conf /etc/nginx/http.d/default.conf
+
+# Устанавливаем в uv из офицального образа
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 COPY pyproject.toml /app/
 
-RUN python3 -m pip install -e ".[dev]"
+RUN uv sync --extra dev
 
 COPY /src ./src
 
