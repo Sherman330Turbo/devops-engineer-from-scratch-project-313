@@ -5,7 +5,9 @@ from flask_cors import CORS
 from sqlmodel import SQLModel
 
 from .db import engine
-from .routes import api
+from .routes.api import api_bp
+from .routes.ping import ping_bp
+from .routes.redirect import redirect_bp
 
 
 def create_app() -> Flask:
@@ -28,10 +30,8 @@ def create_app() -> Flask:
 
     SQLModel.metadata.create_all(engine)
 
-    @app.get("/ping")
-    def get_ping():
-        return "pong", 200
-
-    app.register_blueprint(api)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(ping_bp)
+    app.register_blueprint(redirect_bp)
 
     return app

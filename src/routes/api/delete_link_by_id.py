@@ -1,8 +1,9 @@
-from ..db import delete_link, select_link
-from . import api
+from src.db import delete_link, select_link
+
+from . import api_bp
 
 
-@api.delete("/links/<int:link_id>")
+@api_bp.delete("/links/<int:link_id>")
 def delete_link_by_id(link_id: int):
     link = select_link(link_id=link_id)
 

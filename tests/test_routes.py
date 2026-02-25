@@ -232,3 +232,16 @@ def test_delete_link_by_id(client, test_engine):
     # Сущность для удаления не найдена - 404
     response = client.delete(f"/api/links/{link_id + 1}")
     assert response.status_code == 404
+
+
+def test_redirect(client, test_engine):
+    # Happy path -  302
+    _seed_link(test_engine, "super-url")
+
+    response = client.get("/r/name-super-url")
+    assert response.status_code == 302
+    assert response.headers["Location"] == "https://example.com/super-url"
+
+    # Сущность не найдена, короткой ссылки нет - 404
+    response = client.get("/r/name-non-super-url")
+    assert response.status_code == 404

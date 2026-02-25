@@ -2,11 +2,12 @@ import json
 
 from flask import jsonify, make_response, request
 
-from ..db import get_total_links, select_links
-from . import api
+from src.db import get_total_links, select_links
+
+from . import api_bp
 
 
-@api.get("/links")
+@api_bp.get("/links")
 def read_links():
     raw_range = request.args.get("range", "[0, 9]")
     try:

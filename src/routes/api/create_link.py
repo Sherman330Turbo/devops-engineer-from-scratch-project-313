@@ -1,9 +1,10 @@
 from flask import request
 
-from ..db import insert_link, select_link
-from ..helpers import generate_short_link, push_error
-from ..models import Link
-from . import api
+from src.db import insert_link, select_link
+from src.helpers import generate_short_link, push_error
+from src.models import Link
+
+from . import api_bp
 
 
 def validate_payload(payload):
@@ -20,7 +21,7 @@ def validate_payload(payload):
     return errors
 
 
-@api.post("/links")
+@api_bp.post("/links")
 def create_link():
     payload = request.get_json(silent=True)
     validation_errors = validate_payload(payload)

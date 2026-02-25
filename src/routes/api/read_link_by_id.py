@@ -1,8 +1,9 @@
-from ..db import select_link
-from . import api
+from src.db import select_link
+
+from . import api_bp
 
 
-@api.get("/links/<int:link_id>")
+@api_bp.get("/links/<int:link_id>")
 def read_link_by_id(link_id: int):
     link = select_link(link_id)
 

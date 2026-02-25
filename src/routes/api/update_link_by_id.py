@@ -1,11 +1,12 @@
 from flask import request
 
-from ..db import select_link, update_link
-from ..helpers import (
+from src.db import select_link, update_link
+from src.helpers import (
     push_error,
 )
-from ..models import accepted_keys
-from . import api
+from src.models import accepted_keys
+
+from . import api_bp
 
 
 def validate_payload(payload):
@@ -30,7 +31,7 @@ def validate_payload(payload):
     return errors
 
 
-@api.put("/links/<int:link_id>")
+@api_bp.put("/links/<int:link_id>")
 def update_link_by_id(link_id: int):
     payload = request.get_json(silent=True)
     validation_errors = validate_payload(payload)
