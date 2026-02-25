@@ -3,6 +3,8 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
+accepted_keys = ["original_url", "short_name"]
+
 
 class Link(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

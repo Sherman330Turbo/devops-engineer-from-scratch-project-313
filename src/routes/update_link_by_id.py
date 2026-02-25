@@ -1,13 +1,10 @@
 from flask import request
-from sqlmodel import Session, select
 
+from ..db import select_link, update_link
 from ..helpers import (
-    generate_short_link,
     push_error,
 )
-from ..models import Link
-
-accepted_keys = ["original_url", "short_name"]
+from ..models import accepted_keys
 
 
 def validate_payload(payload):
@@ -32,7 +29,7 @@ def validate_payload(payload):
     return errors
 
 
-def register_update_link_by_id_route(app, engine):
+def register_update_link_by_id_route(app):
     @app.put("/api/links/<int:link_id>")
     def update_link_by_id(link_id: int):
         payload = request.get_json(silent=True)
@@ -40,33 +37,17 @@ def register_update_link_by_id_route(app, engine):
         if len(validation_errors):
             return {"detail": validation_errors}, 422
 
-        with Session(engine) as session:
-            link = session.exec(
-                select(Link).where(Link.id == link_id)
-            ).one_or_none()
+        link = select_link(link_id=link_id)
 
-            if link is None:
-                return {"detail": "Not Found"}, 404
+        if link is None:
+            return {"detail": "Not Found"}, 404
 
-            short_name = payload.get("short_name", None)
-            if short_name:
-                another_link = session.exec(
-                    select(Link).where(
-                        Link.short_name == short_name,
-                        Link.id != link.id,
-                    )
-                ).one_or_none()
+        short_name = payload.get("short_name", None)
+        if short_name:
+            another_link = select_link(link_short_name=short_name)
+            if another_link is not None and another_link.id != link.id:
+                return {"detail": "Conflicted payload"}, 409
 
-                if another_link is not None:
-                    return {"detail": "Conflicted payload"}, 409
+        updated_link = update_link(link.id, payload)
 
-            for key, value in payload.items():
-                if key in accepted_keys:
-                    setattr(link, key, value)
-
-            link.short_url = generate_short_link(link.short_name)
-
-            session.commit()
-            session.refresh(link)
-
-        return link.model_dump(), 200
+        return updated_link.model_dump(), 200

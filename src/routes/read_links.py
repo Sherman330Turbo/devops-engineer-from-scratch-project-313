@@ -1,12 +1,11 @@
 import json
 
 from flask import jsonify, make_response, request
-from sqlmodel import Session, func, select
 
-from ..models import Link
+from ..db import get_total_links, select_links
 
 
-def register_read_links_route(app, engine):
+def register_read_links_route(app):
     @app.get("/api/links")
     def read_links():
         raw_range = request.args.get("range", "[0, 9]")
@@ -25,11 +24,8 @@ def register_read_links_route(app, engine):
         min = int(range_list[0])
         max = int(range_list[1])
 
-        with Session(engine) as session:
-            results = session.exec(
-                select(Link).order_by(Link.id).offset(min).limit(max + 1 - min)
-            ).all()
-            total = session.exec(select(func.count()).select_from(Link)).one()
+        results = select_links(offset=min, limit=max + 1 - min)
+        total = get_total_links()
 
         response = make_response(
             jsonify([link.model_dump() for link in results]), 200

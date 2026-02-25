@@ -1,20 +1,14 @@
-from sqlmodel import Session, select
-
-from ..models import Link
+from ..db import delete_link, select_link
 
 
-def register_delete_link_by_id_route(app, engine):
+def register_delete_link_by_id_route(app):
     @app.delete("/api/links/<int:link_id>")
     def delete_link_by_id(link_id: int):
-        with Session(engine) as session:
-            link = session.exec(
-                select(Link).where(Link.id == link_id)
-            ).one_or_none()
+        link = select_link(link_id=link_id)
 
-            if link is None:
-                return {"detail": "Not Found"}, 404
+        if link is None:
+            return {"detail": "Not Found"}, 404
 
-            session.delete(link)
-            session.commit()
+        delete_link(link)
 
         return "", 204

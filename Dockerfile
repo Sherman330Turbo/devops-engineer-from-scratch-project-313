@@ -7,20 +7,15 @@ COPY package.json package-lock.json ./
 
 RUN npm ci
 
-FROM python:3.14.3-slim-bookworm AS runtime-build
+FROM python:3.14.3-alpine3.23 AS runtime-build
 
 WORKDIR /app
 
-# Установка nginx
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends nginx && \
-    rm -rf /var/lib/apt/lists/*
-
-# Отключаем дефолтный сайт nginx, чтобы он не перехватывал localhost
-RUN rm -f /etc/nginx/sites-enabled/default
+RUN apk add bash
+RUN apk add --no-cache nginx
 
 #Копируем nginx конфиг
-COPY deploy/devops-project-313.conf /etc/nginx/conf.d/default.conf
+COPY deploy/default.conf /etc/nginx/http.d/default.conf
 
 COPY pyproject.toml /app/
 
