@@ -5,7 +5,7 @@ from flask_cors import CORS
 from sqlmodel import SQLModel
 
 from .db import engine
-from .routes import register_routes
+from .routes import api
 
 
 def create_app() -> Flask:
@@ -32,6 +32,6 @@ def create_app() -> Flask:
     def get_ping():
         return "pong", 200
 
-    register_routes(app)
+    app.register_blueprint(api)
 
     return app

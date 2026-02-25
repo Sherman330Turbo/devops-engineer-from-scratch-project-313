@@ -3,6 +3,7 @@ from flask import request
 from ..db import insert_link, select_link
 from ..helpers import generate_short_link, push_error
 from ..models import Link
+from . import api
 
 
 def validate_payload(payload):
@@ -19,28 +20,27 @@ def validate_payload(payload):
     return errors
 
 
-def register_create_link_route(app):
-    @app.post("/api/links")
-    def create_link():
-        payload = request.get_json(silent=True)
-        validation_errors = validate_payload(payload)
-        if len(validation_errors):
-            return {"detail": validation_errors}, 422
+@api.post("/links")
+def create_link():
+    payload = request.get_json(silent=True)
+    validation_errors = validate_payload(payload)
+    if len(validation_errors):
+        return {"detail": validation_errors}, 422
 
-        original_url = payload["original_url"]
-        short_name = payload["short_name"]
+    original_url = payload["original_url"]
+    short_name = payload["short_name"]
 
-        link = select_link(link_short_name=short_name)
+    link = select_link(link_short_name=short_name)
 
-        if link is not None:
-            return {"detail": "Conflicted payload"}, 409
+    if link is not None:
+        return {"detail": "Conflicted payload"}, 409
 
-        new_link = Link(
-            original_url=original_url,
-            short_name=short_name,
-            short_url=generate_short_link(short_name),
-        )
+    new_link = Link(
+        original_url=original_url,
+        short_name=short_name,
+        short_url=generate_short_link(short_name),
+    )
 
-        insert_link(new_link)
+    insert_link(new_link)
 
-        return new_link.model_dump(), 201
+    return new_link.model_dump(), 201

@@ -5,6 +5,7 @@ from ..helpers import (
     push_error,
 )
 from ..models import accepted_keys
+from . import api
 
 
 def validate_payload(payload):
@@ -29,25 +30,24 @@ def validate_payload(payload):
     return errors
 
 
-def register_update_link_by_id_route(app):
-    @app.put("/api/links/<int:link_id>")
-    def update_link_by_id(link_id: int):
-        payload = request.get_json(silent=True)
-        validation_errors = validate_payload(payload)
-        if len(validation_errors):
-            return {"detail": validation_errors}, 422
+@api.put("/links/<int:link_id>")
+def update_link_by_id(link_id: int):
+    payload = request.get_json(silent=True)
+    validation_errors = validate_payload(payload)
+    if len(validation_errors):
+        return {"detail": validation_errors}, 422
 
-        link = select_link(link_id=link_id)
+    link = select_link(link_id=link_id)
 
-        if link is None:
-            return {"detail": "Not Found"}, 404
+    if link is None:
+        return {"detail": "Not Found"}, 404
 
-        short_name = payload.get("short_name", None)
-        if short_name:
-            another_link = select_link(link_short_name=short_name)
-            if another_link is not None and another_link.id != link.id:
-                return {"detail": "Conflicted payload"}, 409
+    short_name = payload.get("short_name", None)
+    if short_name:
+        another_link = select_link(link_short_name=short_name)
+        if another_link is not None and another_link.id != link.id:
+            return {"detail": "Conflicted payload"}, 409
 
-        updated_link = update_link(link.id, payload)
+    updated_link = update_link(link.id, payload)
 
-        return updated_link.model_dump(), 200
+    return updated_link.model_dump(), 200
